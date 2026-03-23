@@ -32,7 +32,7 @@ Below we evaluate the major versioning schemes, presenting the strongest case fo
 
 ### CalVer — YY.MINOR.PATCH
 
-**Best case:** Combines the temporal context of CalVer with the familiar three-segment shape of SemVer. The two-digit year signals when the software was released; sequential MINOR and PATCH segments retain intuitive incremental semantics. Accommodates any release cadence equally well — two releases per year or twelve. Migration from SemVer is seamless because the version shape is structurally identical: existing CI/CD pipelines, dependency specifiers (`>=`, `~=`, `^`), and changelog tooling work without modification. This is the scheme adopted by [pip](https://pip.pypa.io/) — the most widely used Python package manager — since 2024, and it is fully [PEP 440](https://peps.python.org/pep-0440/) compliant.
+**Best case:** Combines the temporal context of CalVer with the familiar three-segment shape of SemVer. The two-digit year signals when the software was released; sequential MINOR and PATCH segments retain intuitive incremental semantics. Accommodates any release cadence equally well — two releases per year or twelve. Migration from SemVer is operationally smooth because the version shape is structurally identical: existing CI/CD pipelines and most dependency tooling that expect three numeric segments continue to parse these versions correctly. However, consumers may need to revisit their version constraints: for example, npm/Cargo/Helm-style `^26.1.0` ranges typically cap at `<27.0.0`, which in a YY.MINOR.PATCH scheme can prevent upgrades in the next calendar year, and `^` is not a valid operator under [PEP 440](https://peps.python.org/pep-0440/). In Python ecosystems, constraints like `>=26.1.0` or `~=26.1.0` remain valid PEP 440 specifiers, but their year-based semantics should be documented for users who rely on cross-year upgrade behavior. This is the scheme adopted by [pip](https://pip.pypa.io/) — the most widely used Python package manager — since 2024, and it is fully PEP 440 compliant.
 
 **Challenges:** Without explicit documentation, users might mistake versions for SemVer and expect MAJOR-version compatibility semantics. Requires clear communication in release notes and documentation.
 
@@ -65,13 +65,13 @@ The convention is:
 - **YY** — two-digit calendar year (26, 27, 28…)
 - **MINOR** — sequential feature release within the year, starting at 1 (26.1.0, 26.2.0, 26.3.0…)
 - **PATCH** — bugfix and security releases (26.1.1, 26.1.2…)
-- **Pre-releases** — standard suffixes: `26.1.0rc1`, `26.1.0a1`
+- **Pre-releases** — ecosystem-specific suffixes, e.g. SemVer-style `26.1.0-rc.1`, `26.1.0-alpha.1` and PEP 440–style `26.1.0rc1`, `26.1.0a1` for Python packages
 
 This format best fits sbomify because:
 
 1. **Freshness signal matters in supply chain security.** Version numbers appear in SBOMs, VEX documents, compliance reports, and procurement records. A year prefix immediately communicates how current the tooling is — and running outdated supply chain tools is itself a security risk.
 2. **Our release cadence is irregular.** Releases are driven by specification updates (SPDX 3.x, CycloneDX), vulnerability disclosures, and customer needs — not a fixed monthly calendar. `YY.MINOR.PATCH` accommodates two releases or twelve releases in a year equally well.
-3. **Seamless migration from SemVer.** The three-segment structure is identical to SemVer, so existing CI/CD pipelines, dependency specifiers, Docker tags, and changelog tooling require no changes.
+3. **Seamless migration for internal tooling.** The three-segment structure is identical to SemVer, so existing CI/CD pipelines, Docker tags, and changelog tooling that only assume a `X.Y.Z` numeric pattern typically require no syntax changes. Downstream consumers that use SemVer-style version constraints (for example `<2.0.0`, `^1.4.0`, or Helm constraints) will need to revisit those constraints when adopting versions like `26.1.0`.
 4. **Proven at scale.** pip uses this exact scheme, validating it across millions of installations.
 5. **PATCH segment for hotfixes.** We retain the ability to ship targeted security patches without a full minor release.
 
