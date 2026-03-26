@@ -10,7 +10,7 @@ repos:
     hooks:
       - id: markdownlint
         name: markdownlint
-        entry: bun x markdownlint --fix
+        entry: bun x markdownlint-cli --fix
         language: system
         files: \.md$
         pass_filenames: true
